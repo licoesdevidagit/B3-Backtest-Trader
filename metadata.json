@@ -1,0 +1,6 @@
+{
+  "name": "B3 Backtest Trader - Mini Índice e Mini Dólar",
+  "description": "Aplicativo simples para backtest de day trade em Mini Índice e Mini Dólar, com taxa de acerto, histórico detalhado e gerenciamento de setups.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
