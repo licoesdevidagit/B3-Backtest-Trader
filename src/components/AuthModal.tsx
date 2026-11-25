@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, AlertCircle, ArrowRight, UserPlus, LogIn } from 'lucide-react';
+import { X, Lock, CreditCard, AlertCircle, UserPlus, LogIn } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { 
   signInWithEmailAndPassword, 
@@ -12,9 +12,17 @@ interface AuthModalProps {
   onClose: () => void;
 }
 
+const formatCPF = (value: string) => {
+  const nums = value.replace(/\D/g, '').slice(0, 11);
+  if (nums.length <= 3) return nums;
+  if (nums.length <= 6) return `${nums.slice(0, 3)}.${nums.slice(3)}`;
+  if (nums.length <= 9) return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6)}`;
+  return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6, 9)}-${nums.slice(9)}`;
+};
+
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
+  const [cpf, setCpf] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -27,23 +35,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError(null);
     setLoading(true);
 
+    const cleanCpf = cpf.replace(/\D/g, '');
+    if (cleanCpf.length !== 11) {
+      setError('CPF inválido. Digite os 11 números do CPF.');
+      setLoading(false);
+      return;
+    }
+
+    const internalEmail = `${cleanCpf}@b3trader.local`;
+
     try {
       if (isSignUp) {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, internalEmail, password);
         if (name.trim() && userCredential.user) {
           await updateProfile(userCredential.user, { displayName: name.trim() });
         }
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, internalEmail, password);
       }
       onClose();
     } catch (err: any) {
       console.error('Auth error:', err);
       let msg = 'Ocorreu um erro na autenticação.';
-      if (err.code === 'auth/invalid-email') msg = 'E-mail inválido.';
-      else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'E-mail ou senha incorretos.';
-      else if (err.code === 'auth/email-already-in-use') msg = 'Este e-mail já está cadastrado.';
-      else if (err.code === 'auth/weak-password') msg = 'A senha deve ter pelo menos 6 caracteres.';
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg = 'CPF ou senha incorretos.';
+      } else if (err.code === 'auth/email-already-in-use') {
+        msg = 'Este CPF já está cadastrado.';
+      } else if (err.code === 'auth/weak-password') {
+        msg = 'A senha deve ter pelo menos 6 caracteres.';
+      } else if (err.code === 'auth/operation-not-allowed' || err.code === 'auth/admin-restricted-operation') {
+        msg = 'O login por E-mail/Senha não está ativado no console do Firebase (Authentication > Sign-in method).';
+      } else {
+        msg = `Erro: ${err.message || 'Ocorreu um erro na autenticação.'}`;
+      }
       setError(msg);
     } finally {
       setLoading(false);
@@ -61,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
             <div>
               <h2 className="text-base font-semibold text-white tracking-tight">
-                {isSignUp ? 'Criar Conta na Nuvem' : 'Entrar na sua Conta'}
+                {isSignUp ? 'Criar Conta com CPF' : 'Entrar com CPF'}
               </h2>
               <p className="text-xs text-slate-400">
                 {isSignUp ? 'Salve seus trades e setups na nuvem com segurança' : 'Acesse seus dados de qualquer dispositivo'}
@@ -125,17 +149,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
-              E-mail
+              CPF
             </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
+              <CreditCard className="absolute left-3.5 top-3 h-4 w-4 text-slate-500" />
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu.email@exemplo.com"
-                className="w-full rounded-xl border border-slate-700 bg-slate-800/80 pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(formatCPF(e.target.value))}
+                placeholder="000.000.000-00"
+                className="w-full rounded-xl border border-slate-700 bg-slate-800/80 pl-10 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
                 required
+                maxLength={14}
               />
             </div>
           </div>
@@ -173,12 +198,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             ) : isSignUp ? (
               <>
                 <UserPlus className="h-4 w-4" />
-                <span>Criar Conta e Sincronizar</span>
+                <span>Criar Conta com CPF</span>
               </>
             ) : (
               <>
                 <LogIn className="h-4 w-4" />
-                <span>Entrar na Conta</span>
+                <span>Entrar com CPF</span>
               </>
             )}
           </button>
