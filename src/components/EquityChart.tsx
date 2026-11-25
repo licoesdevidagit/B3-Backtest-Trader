@@ -360,7 +360,7 @@ export const EquityChart: React.FC<EquityChartProps> = ({
             <input
               type="number"
               min="0"
-              step="50"
+              step="any"
               value={tempCapitalInput}
               onChange={(e) => setTempCapitalInput(e.target.value)}
               className="pl-8 pr-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-white font-mono text-xs w-28 focus:outline-none focus:border-emerald-500"

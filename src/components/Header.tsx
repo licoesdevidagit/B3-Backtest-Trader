@@ -2,6 +2,7 @@ import React from 'react';
 import { PlusCircle, Sliders, Database, TrendingUp, BarChart3, ListFilter, CalendarDays, PieChart, Palette, Receipt, Trophy, Award, Wallet, Brain } from 'lucide-react';
 import { formatBRL } from '../utils/calculations';
 import { STORAGE_KEY_CERT_TRADER_NAME } from '../utils/milestones';
+import { InstallAppButton } from './InstallAppButton';
 
 interface HeaderProps {
   activeTab: 'dashboard' | 'graficos' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia';
@@ -146,6 +147,9 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-slate-400">Trader:</span>
               <span className="font-mono text-emerald-400">{traderName}</span>
             </div>
+
+            {/* PWA Install Button */}
+            <InstallAppButton />
 
             {/* Novo Trade */}
             <button

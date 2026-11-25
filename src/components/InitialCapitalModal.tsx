@@ -235,7 +235,7 @@ export const InitialCapitalModal: React.FC<InitialCapitalModalProps> = ({
                 <input
                   type="number"
                   min="0"
-                  step="50"
+                  step="any"
                   value={inputValue}
                   onChange={(e) => {
                     setInputValue(e.target.value);

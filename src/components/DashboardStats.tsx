@@ -149,7 +149,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
               <input
                 type="number"
                 min="0"
-                step="50"
+                step="any"
                 value={capitalInput}
                 onChange={(e) => setCapitalInput(e.target.value)}
                 placeholder="1000"

@@ -43,6 +43,7 @@ import { AnalyticsChartsView } from './components/AnalyticsChartsView';
 import { RiskAlertsWidget } from './components/RiskAlertsWidget';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { db } from './lib/firebase';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 
@@ -64,9 +65,11 @@ const STORAGE_KEY_INITIAL_CAPITAL = 'b3_account_initial_capital_v1';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

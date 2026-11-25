@@ -1109,7 +1109,7 @@ export const RiskAlertsWidget: React.FC<RiskAlertsWidgetProps> = ({
                     <span className="absolute left-3 top-2 text-xs text-slate-500 font-mono">R$</span>
                     <input
                       type="number"
-                      step="50"
+                      step="any"
                       min="100"
                       value={tempSettings.weeklyLossLimitFixed}
                       onChange={(e) => setTempSettings({
