@@ -1,10 +1,11 @@
 import React from 'react';
-import { PlusCircle, Sliders, Database, TrendingUp, BarChart3, ListFilter, CalendarDays, PieChart, Palette, Receipt, Trophy, Award, Wallet, Brain, Building2 } from 'lucide-react';
+import { PlusCircle, Sliders, Database, TrendingUp, BarChart3, ListFilter, CalendarDays, PieChart, Palette, Receipt, Trophy, Award, Wallet, Brain, LogIn, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { formatBRL } from '../utils/calculations';
 
 interface HeaderProps {
-  activeTab: 'dashboard' | 'graficos' | 'acoes' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia';
-  setActiveTab: (tab: 'dashboard' | 'graficos' | 'acoes' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia') => void;
+  activeTab: 'dashboard' | 'graficos' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia';
+  setActiveTab: (tab: 'dashboard' | 'graficos' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia') => void;
   onOpenNewTrade: () => void;
   onOpenSetups: () => void;
   onOpenDataBackup: () => void;
@@ -29,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   achievedGoalsCount,
   totalTrades,
 }) => {
+  const { user, setIsAuthModalOpen, logOut } = useAuth();
   return (
     <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md w-full">
       <div className="mx-auto max-w-7xl px-2.5 sm:px-4 lg:px-6 py-2 space-y-2">
@@ -49,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 hidden 2xl:block whitespace-nowrap">
-                Day Trade em Mini Contratos Futuros e Ações B3
+                Day Trade em Mini Contratos e Ações B3
               </p>
             </div>
           </div>
@@ -132,21 +134,48 @@ export const Header: React.FC<HeaderProps> = ({
               <Database className="h-3.5 w-3.5 text-slate-300" />
             </button>
 
+            {/* Login / Logout */}
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-400 font-medium hidden sm:inline">{user.email || user.displayName}</span>
+                <button
+                  type="button"
+                  onClick={logOut}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>Sair</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span>Entrar / Conta</span>
+              </button>
+            )}
+
             {/* Novo Trade */}
             <button
               type="button"
               onClick={onOpenNewTrade}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-slate-950 hover:bg-emerald-400 active:bg-emerald-600 transition-colors shadow-sm whitespace-nowrap cursor-pointer"
+              title="Registrar nova operação de Day Trade"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 text-slate-950 hover:bg-emerald-400 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
             >
               <PlusCircle className="h-3.5 w-3.5" />
-              <span className="font-bold">Novo Trade</span>
+              <span>Novo Trade</span>
             </button>
+
+
           </div>
         </div>
 
         {/* Row 2: Barra de Navegação de Módulos 100% Justificada de Ponta a Ponta */}
         <nav className="w-full bg-slate-900/90 p-1 rounded-xl border border-slate-800 shadow-inner">
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-8 sm:gap-1 w-full">
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-7 sm:gap-1 w-full">
             <button
               type="button"
               onClick={() => setActiveTab('dashboard')}
@@ -175,19 +204,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Gráficos</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('acoes')}
-              title="Módulo dedicado a Day Trade em Ações da B3 com calculadora e histórico"
-              className={`w-full shrink-0 sm:shrink flex items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] sm:text-xs font-medium rounded-lg transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'acoes'
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm font-bold'
-                  : 'text-slate-400 hover:text-purple-300 hover:bg-slate-800/50'
-              }`}
-            >
-              <Building2 className="h-3.5 w-3.5 text-purple-400" />
-              <span>Ações B3</span>
-            </button>
+
 
             <button
               type="button"

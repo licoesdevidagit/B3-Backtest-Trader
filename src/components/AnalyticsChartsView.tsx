@@ -24,24 +24,28 @@ import {
   Eye,
   Activity,
   Award,
-  ChevronRight
+  ChevronRight,
+  Trophy
 } from 'lucide-react';
+import { SetupMonthAnalyzerView } from './SetupMonthAnalyzerView';
 
 interface AnalyticsChartsViewProps {
   trades: Trade[];
   setups: Setup[];
   initialCapital?: number;
   onFilterBySetup?: (setupId: string) => void;
+  onFilterByMonth?: (monthKey: string) => void;
   onOpenNewTrade?: () => void;
 }
 
-type ChartTab = 'all' | 'setups' | 'losses' | 'equity' | 'goals';
+type ChartTab = 'all' | 'setups' | 'losses' | 'equity' | 'goals' | 'setupMonth';
 
 export const AnalyticsChartsView: React.FC<AnalyticsChartsViewProps> = ({
   trades,
   setups,
   initialCapital = 1000,
   onFilterBySetup,
+  onFilterByMonth,
   onOpenNewTrade,
 }) => {
   const [activeChartTab, setActiveChartTab] = useState<ChartTab>('all');
@@ -537,6 +541,19 @@ export const AnalyticsChartsView: React.FC<AnalyticsChartsViewProps> = ({
             <Clock className="h-3.5 w-3.5" />
             <span>Tempo até Alcançar Objetivos</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveChartTab('setupMonth')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              activeChartTab === 'setupMonth'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
+                : 'bg-slate-950/60 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800/80'
+            }`}
+          >
+            <Trophy className="h-3.5 w-3.5" />
+            <span>Setup x Mês (Melhor do Mês)</span>
+          </button>
         </div>
       </div>
 
@@ -592,6 +609,15 @@ export const AnalyticsChartsView: React.FC<AnalyticsChartsViewProps> = ({
           </span>
         </div>
       </div>
+
+      {activeChartTab === 'setupMonth' && (
+        <SetupMonthAnalyzerView
+          trades={trades}
+          setups={setups}
+          onFilterBySetup={onFilterBySetup}
+          onFilterByMonth={onFilterByMonth}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* GRÁFICO 1: DESEMPENHO COMPARATIVO POR SETUP                               */}

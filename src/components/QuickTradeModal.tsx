@@ -33,9 +33,11 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
   const [quantity, setQuantity] = useState<number>(initialTradeData?.quantity || 200);
   const [entryPrice, setEntryPrice] = useState<string>(initialTradeData?.entryPrice ? String(initialTradeData.entryPrice) : '');
   const [exitPrice, setExitPrice] = useState<string>(initialTradeData?.exitPrice ? String(initialTradeData.exitPrice) : '');
+  const [stopLoss, setStopLoss] = useState<string>(initialTradeData?.stopLoss ? String(initialTradeData.stopLoss) : '');
+  const [takeProfit, setTakeProfit] = useState<string>(initialTradeData?.takeProfit ? String(initialTradeData.takeProfit) : '');
   const [setupId, setSetupId] = useState<string>(initialTradeData?.setupId || '');
   const [direction, setDirection] = useState<TradeDirection>(initialTradeData?.direction || 'COMPRA');
-  const [contracts, setContracts] = useState<number>(initialTradeData?.contracts || 1);
+  const [contracts, setContracts] = useState<number | string>(initialTradeData?.contracts || 1);
   const [result, setResult] = useState<TradeResult>(initialTradeData?.result || 'GAIN');
   const [pointsInput, setPointsInput] = useState<string>(
     initialTradeData?.points !== undefined ? String(Math.abs(initialTradeData.points)) : '150'
@@ -96,8 +98,12 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
   useEffect(() => {
     if (asset === 'WIN') {
       setPointsInput('150');
-    } else {
+    } else if (asset === 'WDO') {
       setPointsInput('8.0');
+    } else if (asset === 'ACOES') {
+      setPointsInput('');
+      setCustomFinancial('');
+      setContracts('');
     }
   }, [asset]);
 
@@ -130,25 +136,6 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
     applySetupDefaults(newSetupId, result, asset);
   };
 
-  // Auto calculate points and financial if entry and exit prices are provided for equities
-  useEffect(() => {
-    if (asset === 'ACOES') {
-      const ep = parseFloat(entryPrice);
-      const xp = parseFloat(exitPrice);
-      if (!isNaN(ep) && !isNaN(xp) && ep > 0 && xp > 0) {
-        const diff = direction === 'COMPRA' ? (xp - ep) : (ep - xp);
-        setPointsInput(String(Math.abs(diff).toFixed(2)));
-        if (diff > 0.001) {
-          setResult('GAIN');
-        } else if (diff < -0.001) {
-          setResult('LOSS');
-        } else {
-          setResult('BREAKEVEN');
-        }
-      }
-    }
-  }, [asset, entryPrice, exitPrice, direction]);
-
   if (!isOpen) return null;
 
   // Signed points calculation
@@ -156,7 +143,7 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
   const signedPoints = result === 'GAIN' ? absPoints : result === 'LOSS' ? -absPoints : 0;
   
   // Auto financial calculation
-  const autoFinancial = calculateTradeFinancial(asset, signedPoints, contracts);
+  const autoFinancial = calculateTradeFinancial(asset, signedPoints, Number(contracts) || 1);
   const finalFinancial = isManualFinancial && customFinancial !== '' 
     ? parseFloat(customFinancial) || 0 
     : autoFinancial;
@@ -165,21 +152,25 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
     e.preventDefault();
     const selectedSetup = setups.find(s => s.id === setupId);
 
+    const acoesContracts = asset === 'ACOES' ? (parseInt(String(contracts)) || 0) : Math.max(1, Number(contracts) || 1);
+    const acoesNetVal = asset === 'ACOES' ? (parseFloat(pointsInput) || 0) : finalFinancial;
+    const acoesVolumeVal = asset === 'ACOES' ? (parseFloat(customFinancial) || 0) : undefined;
+    const acoesResult: TradeResult = asset === 'ACOES'
+      ? (acoesNetVal > 0 ? 'GAIN' : acoesNetVal < 0 ? 'LOSS' : 'BREAKEVEN')
+      : result;
+
     onSaveTrade({
       date,
       time,
       asset,
-      ticker: asset === 'ACOES' ? (ticker.trim().toUpperCase() || 'PETR4') : undefined,
-      quantity: asset === 'ACOES' ? Math.max(1, quantity) : undefined,
-      entryPrice: asset === 'ACOES' && parseFloat(entryPrice) > 0 ? parseFloat(entryPrice) : undefined,
-      exitPrice: asset === 'ACOES' && parseFloat(exitPrice) > 0 ? parseFloat(exitPrice) : undefined,
-      setupId,
-      setupName: selectedSetup?.name || 'Setup Padrão',
+      setupId: asset === 'ACOES' ? (setupId || setups[0]?.id || 'default') : setupId,
+      setupName: asset === 'ACOES' ? 'Ações B3' : (selectedSetup?.name || 'Setup Padrão'),
       direction,
-      contracts: asset === 'ACOES' ? Math.max(1, quantity) : Math.max(1, contracts),
-      result,
-      points: signedPoints,
-      financialValue: finalFinancial,
+      contracts: acoesContracts,
+      result: acoesResult,
+      points: asset === 'ACOES' ? acoesNetVal : signedPoints,
+      financialValue: acoesNetVal,
+      financialVolume: acoesVolumeVal,
       notes: notes.trim() || undefined,
       psychology: {
         followedPlan,
@@ -198,12 +189,9 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
 
   const pointPresets = asset === 'WIN' 
     ? [50, 100, 150, 200, 300, 500] 
-    : asset === 'WDO'
-    ? [3.0, 5.0, 8.0, 10.0, 15.0, 20.0]
-    : [0.20, 0.40, 0.60, 0.80, 1.00, 1.50];
+    : [3.0, 5.0, 8.0, 10.0, 15.0, 20.0];
 
   const quickContractPresets = [1, 2, 3, 5, 10];
-  const quickStockQtyPresets = [100, 200, 500, 1000, 2000];
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm p-2 sm:p-4 flex items-center justify-center">
@@ -230,7 +218,7 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* Scrollable Form Body */}
           <div className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-4.5 space-y-3.5 overscroll-contain">
-            {/* 1. Ativo (Mini Índice WIN, Mini Dólar WDO ou Ações B3) */}
+            {/* 1. Ativo (Mini Índice WIN ou Mini Dólar WDO) */}
             <div>
             <label className="block text-xs font-medium text-slate-300 mb-1.5">
               1. Selecione o Mercado / Ativo
@@ -276,64 +264,107 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
                 type="button"
                 onClick={() => {
                   setAsset('ACOES');
-                  setPointsInput('0.60');
+                  setPointsInput('');
+                  setCustomFinancial('');
+                  setContracts('');
+                  setTicker('PETR4');
                 }}
                 className={`py-2 px-2 text-xs font-semibold rounded-lg border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
                   asset === 'ACOES'
-                    ? 'border-indigo-500/50 bg-indigo-500/15 text-indigo-300 ring-1 ring-indigo-500/40'
+                    ? 'border-amber-500/50 bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/40'
                     : 'border-slate-800 bg-slate-800/40 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                 }`}
               >
                 <span className="text-xs sm:text-sm font-bold font-mono">Ações B3</span>
                 <span className="text-[9px] text-slate-400 font-normal">
-                  R$ / ação
+                  PETR4, VALE3...
                 </span>
               </button>
             </div>
           </div>
 
-          {/* Se Ações B3: Seletor de Ticker da Ação */}
-          {asset === 'ACOES' && (
-            <div className="p-3 rounded-xl border border-indigo-500/20 bg-indigo-950/20 space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-indigo-300">
-                  Código da Ação (Ticker B3):
+          {/* Se asset === 'ACOES': Exibir APENAS Data, Volume Operado, Quantidade de Papéis, Valor Líquido das Operações e Setup Utilizado */}
+          {asset === 'ACOES' ? (
+            <div className="space-y-4 py-2">
+              <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+                <span>📈</span>
+                <span>Registrando Day Trade em Ações (Modo Simplificado)</span>
+              </div>
+
+              {/* 1. Data */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Data
                 </label>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  Lote Padrão: 100 ações
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  onClick={(e) => e.currentTarget.showPicker?.()}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none cursor-pointer"
+                  required
+                />
+              </div>
+
+              {/* 2. Quantidade de Papéis */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Quantidade de Papéis
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={contracts}
+                  onChange={(e) => {
+                    const val = e.target.value === '' ? '' : parseInt(e.target.value) || 0;
+                    setContracts(val);
+                    setQuantity(typeof val === 'number' ? val : 0);
+                  }}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none"
+                  placeholder="Ex: 500"
+                  required
+                />
+              </div>
+
+              {/* 3. Volume Operado */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Volume Operado (R$)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={asset === 'ACOES' ? customFinancial : (customFinancial === '' ? (Number(contracts) * 35) : customFinancial)}
+                  onChange={(e) => setCustomFinancial(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none"
+                  placeholder="Ex: 25000.00"
+                  required
+                />
+              </div>
+
+              {/* 4. Valor Líquido das Operações */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Valor Líquido das Operações (R$)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={pointsInput}
+                  onChange={(e) => setPointsInput(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-white font-mono focus:border-emerald-500 focus:outline-none"
+                  placeholder="Ex: 250.00 (lucro) ou -120.00 (prejuízo)"
+                  required
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Informe o resultado financeiro líquido (positivo para ganho, negativo para perda).
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={ticker}
-                  onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                  placeholder="Ex: PETR4, VALE3, ITUB4..."
-                  className="w-32 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white font-mono uppercase font-bold focus:border-indigo-500 focus:outline-none"
-                  required
-                />
-                {/* Quick Chips */}
-                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
-                  {['PETR4', 'VALE3', 'ITUB4', 'BBAS3', 'PRIO3', 'WEGE3'].map((tk) => (
-                    <button
-                      key={tk}
-                      type="button"
-                      onClick={() => setTicker(tk)}
-                      className={`px-2 py-1 rounded text-[10px] font-mono font-bold transition-colors cursor-pointer border ${
-                        ticker.toUpperCase() === tk
-                          ? 'bg-indigo-600 text-white border-indigo-400'
-                          : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:text-white'
-                      }`}
-                    >
-                      {tk}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
-          )}
-
+          ) : (
+            <div className="space-y-3.5">
           {/* 2. Setup */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
@@ -850,10 +881,8 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
               className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-none"
             />
           </div>
-
-          </div>
-
-          {/* Footer Submit (fixed at bottom) */}
+            </div>
+          )}
           <div className="p-3 sm:p-3.5 border-t border-slate-800 bg-slate-900/95 shrink-0 flex items-center justify-end gap-2">
             <button
               type="button"
@@ -869,6 +898,7 @@ export const QuickTradeModal: React.FC<QuickTradeModalProps> = ({
             >
               Registrar Operação
             </button>
+          </div>
           </div>
         </form>
       </div>

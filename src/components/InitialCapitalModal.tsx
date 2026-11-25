@@ -186,7 +186,7 @@ export const InitialCapitalModal: React.FC<InitialCapitalModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-xl max-h-[88vh] sm:max-h-[90vh] my-auto flex flex-col rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl text-slate-100 overflow-hidden"
+        className="relative w-full max-w-xl max-h-[88vh] sm:max-h-[90vh] my-auto flex flex-col rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl text-slate-100 min-h-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Glow Header Accent */}
@@ -497,7 +497,7 @@ export const InitialCapitalModal: React.FC<InitialCapitalModalProps> = ({
           </div>
 
           </div>
-
+          
           {/* Pinned Footer Actions */}
           <div className="flex items-center justify-end gap-2 p-3 sm:p-4 border-t border-slate-800 bg-slate-900/95 shrink-0">
             <button

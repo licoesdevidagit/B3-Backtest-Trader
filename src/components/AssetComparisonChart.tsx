@@ -80,13 +80,11 @@ export const AssetComparisonChart: React.FC<AssetComparisonChartProps> = ({ trad
 
     const win = calculateMetrics(winTrades);
     const wdo = calculateMetrics(wdoTrades);
-    const acoesTrades = trades.filter((t) => t.asset === 'ACOES');
-    const acoes = calculateMetrics(acoesTrades);
 
     // Scaling calculations for bar charts
-    const maxProfit = Math.max(Math.abs(win.netProfit), Math.abs(wdo.netProfit), Math.abs(acoes.netProfit), 1);
-    const maxGrossGain = Math.max(win.grossGain, wdo.grossGain, acoes.grossGain, 1);
-    const totalVolume = win.grossGain + win.grossLoss + wdo.grossGain + wdo.grossLoss + acoes.grossGain + acoes.grossLoss;
+    const maxProfit = Math.max(Math.abs(win.netProfit), Math.abs(wdo.netProfit), 1);
+    const maxGrossGain = Math.max(win.grossGain, wdo.grossGain, 1);
+    const totalVolume = win.grossGain + win.grossLoss + wdo.grossGain + wdo.grossLoss;
 
     // Leader analysis
     const higherProfitAsset = win.netProfit >= wdo.netProfit ? 'WIN' : 'WDO';
@@ -95,7 +93,6 @@ export const AssetComparisonChart: React.FC<AssetComparisonChartProps> = ({ trad
     return {
       win,
       wdo,
-      acoes,
       maxProfit,
       maxGrossGain,
       totalVolume,
@@ -164,7 +161,7 @@ export const AssetComparisonChart: React.FC<AssetComparisonChartProps> = ({ trad
       </div>
 
       {/* KPI Cards: WIN vs WDO vs AÇÕES side-by-side snapshot */}
-      <div className={`grid grid-cols-1 ${stats.acoes.totalTrades > 0 ? 'lg:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Card WIN (Mini Índice) */}
         <div className="p-4 rounded-xl border border-blue-500/30 bg-gradient-to-br from-blue-950/20 via-slate-950 to-slate-950 shadow-md space-y-3 relative overflow-hidden">
           <div className="flex items-center justify-between">
@@ -282,64 +279,6 @@ export const AssetComparisonChart: React.FC<AssetComparisonChartProps> = ({ trad
             </span>
           </div>
         </div>
-
-        {/* Card Ações (B3) */}
-        {stats.acoes.totalTrades > 0 && (
-          <div className="p-4 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-950/20 via-slate-950 to-slate-950 shadow-md space-y-3 relative overflow-hidden">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-500 ring-4 ring-purple-500/20" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  Ações (B3)
-                </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20">
-                  Day Trade à Vista
-                </span>
-              </div>
-              <span className="text-xs font-mono text-slate-400">
-                {stats.acoes.totalTrades} {stats.acoes.totalTrades === 1 ? 'trade' : 'trades'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-sans block">Resultado Líquido</span>
-                <span
-                  className={`text-xl font-bold font-mono tabular-nums ${
-                    stats.acoes.netProfit >= 0 ? 'text-purple-400' : 'text-rose-400'
-                  }`}
-                >
-                  {formatBRL(stats.acoes.netProfit)}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-sans block">Taxa de Acerto</span>
-                <span className="text-xl font-bold font-mono text-white tabular-nums flex items-center gap-1">
-                  {stats.acoes.winRate.toFixed(1)}%
-                  <span className="text-[11px] font-normal text-slate-400">
-                    ({stats.acoes.wins}G / {stats.acoes.losses}L)
-                  </span>
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-              <span>
-                Fator Lucro:{' '}
-                <strong className="text-slate-200">{stats.acoes.profitFactor.toFixed(2)}</strong>
-              </span>
-              <span>·</span>
-              <span>
-                Payoff: <strong className="text-slate-200">{stats.acoes.payoff.toFixed(2)}</strong>
-              </span>
-              <span>·</span>
-              <span>
-                Méd/Trade: <strong className={stats.acoes.avgTrade >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{formatBRL(stats.acoes.avgTrade)}</strong>
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* COMPARATIVE BAR CHARTS SECTION */}

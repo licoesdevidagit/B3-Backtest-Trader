@@ -88,7 +88,7 @@ export const ThemeCustomizerModal: React.FC<ThemeCustomizerModalProps> = ({ isOp
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md p-2 sm:p-4 flex items-center justify-center animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl max-h-[88vh] sm:max-h-[90vh] my-auto flex flex-col rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl text-slate-100 overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[88vh] sm:max-h-[90vh] my-auto flex flex-col rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl text-slate-100 min-h-0">
         {/* Header */}
         <div className="p-3.5 sm:p-4.5 border-b border-slate-800 shrink-0 bg-slate-900/95 flex items-center justify-between">
           <div className="flex items-center gap-2.5">

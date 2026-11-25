@@ -8,7 +8,7 @@ export interface Setup {
   id: string;
   name: string;
   description?: string;
-  preferredAsset: 'WIN' | 'WDO' | 'ACOES' | 'AMBOS' | 'TODOS';
+  preferredAsset: 'WIN' | 'WDO' | 'AMBOS';
   defaultGainPts?: number;
   defaultLossPts?: number;
   color?: string;
@@ -60,6 +60,8 @@ export interface Trade {
   quantity?: number; // Quantidade de ações negociadas (ex: 100, 200, 500, 1000)
   entryPrice?: number; // Preço de entrada em R$ (ex: 35.50)
   exitPrice?: number; // Preço de saída em R$ (ex: 36.15)
+  stopLoss?: number; // Stop Loss planejado (R$)
+  takeProfit?: number; // Take Profit planejado (R$)
   priceChange?: number; // Oscilação em R$ por ação (+0.65 ou -0.40)
   priceChangePercent?: number; // Oscilação percentual (+1.83%)
   financialVolume?: number; // Volume financeiro total movimentado (compra + venda)

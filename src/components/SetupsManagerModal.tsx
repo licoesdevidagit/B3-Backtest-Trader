@@ -47,7 +47,7 @@ export const SetupsManagerModal: React.FC<SetupsManagerModalProps> = ({
 
   // Form states
   const [name, setName] = useState<string>('');
-  const [preferredAsset, setPreferredAsset] = useState<'WIN' | 'WDO' | 'AMBOS' | 'ACOES' | 'TODOS'>('AMBOS');
+  const [preferredAsset, setPreferredAsset] = useState<'WIN' | 'WDO' | 'AMBOS'>('AMBOS');
   const [defaultGainPts, setDefaultGainPts] = useState<string>('200');
   const [defaultLossPts, setDefaultLossPts] = useState<string>('130');
   const [description, setDescription] = useState<string>('');
@@ -199,7 +199,7 @@ export const SetupsManagerModal: React.FC<SetupsManagerModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm p-2 sm:p-4 flex items-center justify-center">
-      <div className="relative w-full max-w-2xl max-h-[88vh] sm:max-h-[90vh] my-auto flex flex-col rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl text-slate-100 overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[88vh] sm:max-h-[90vh] my-auto flex flex-col rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl text-slate-100 min-h-0">
         {/* Header */}
         <div className="p-3.5 sm:p-4.5 border-b border-slate-800 shrink-0 bg-slate-900/95 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -290,8 +290,6 @@ export const SetupsManagerModal: React.FC<SetupsManagerModalProps> = ({
                     <option value="AMBOS">WIN e WDO</option>
                     <option value="WIN">Mini Índice (WIN)</option>
                     <option value="WDO">Mini Dólar (WDO)</option>
-                    <option value="ACOES">Ações B3 (ACOES)</option>
-                    <option value="TODOS">Todos os Mercados</option>
                   </select>
                 </div>
 

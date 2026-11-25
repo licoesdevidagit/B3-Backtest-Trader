@@ -41,7 +41,11 @@ import { PsychologyDashboard } from './components/PsychologyDashboard';
 import { PsychologyWidget } from './components/PsychologyWidget';
 import { AnalyticsChartsView } from './components/AnalyticsChartsView';
 import { RiskAlertsWidget } from './components/RiskAlertsWidget';
-import { AcoesDayTradeView } from './components/AcoesDayTradeView';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthModal } from './components/AuthModal';
+import { db } from './lib/firebase';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+
 import { 
   Milestone, 
   FINANCIAL_MILESTONES, 
@@ -59,6 +63,15 @@ const STORAGE_KEY_SETUPS = 'b3_backtest_setups_v1';
 const STORAGE_KEY_INITIAL_CAPITAL = 'b3_account_initial_capital_v1';
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
+  );
+}
+
+function MainApp() {
+  const { user, isAuthModalOpen, setIsAuthModalOpen } = useAuth();
   // Load Setups
   const [setups, setSetups] = useState<Setup[]>(() => {
     try {
@@ -99,7 +112,7 @@ export default function App() {
   });
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'graficos' | 'acoes' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'graficos' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia'>('dashboard');
 
   // Initial Capital (Account starting balance)
   const [initialCapital, setInitialCapital] = useState<number>(() => {
@@ -197,6 +210,55 @@ export default function App() {
       console.error('Failed to save trades', e);
     }
   }, [trades]);
+
+  // Load from Firestore when user logs in
+  useEffect(() => {
+    if (user) {
+      const fetchCloudData = async () => {
+        try {
+          const tradesSnap = await getDocs(collection(db, 'users', user.uid, 'trades'));
+          if (!tradesSnap.empty) {
+            const cloudTrades = tradesSnap.docs.map(d => d.data() as Trade);
+            if (cloudTrades.length > 0) setTrades(cloudTrades);
+          }
+          const setupsSnap = await getDocs(collection(db, 'users', user.uid, 'setups'));
+          if (!setupsSnap.empty) {
+            const cloudSetups = setupsSnap.docs.map(d => d.data() as Setup);
+            if (cloudSetups.length > 0) setSetups(cloudSetups);
+          }
+        } catch (e) {
+          console.error('Failed to load cloud data', e);
+        }
+      };
+      fetchCloudData();
+    }
+  }, [user]);
+
+  // Sync to Firestore when trades change and user is logged in
+  useEffect(() => {
+    if (user && trades.length > 0) {
+      trades.forEach(async (trade) => {
+        try {
+          await setDoc(doc(db, 'users', user.uid, 'trades', trade.id), trade);
+        } catch (e) {
+          console.error('Failed to sync trade to cloud', e);
+        }
+      });
+    }
+  }, [trades, user]);
+
+  // Sync to Firestore when setups change and user is logged in
+  useEffect(() => {
+    if (user && setups.length > 0) {
+      setups.forEach(async (setup) => {
+        try {
+          await setDoc(doc(db, 'users', user.uid, 'setups', setup.id), setup);
+        } catch (e) {
+          console.error('Failed to sync setup to cloud', e);
+        }
+      });
+    }
+  }, [setups, user]);
 
   // Derived metrics (Global)
   const metrics: DashboardMetrics = useMemo(() => calculateMetrics(trades), [trades]);
@@ -672,6 +734,7 @@ export default function App() {
             setups={setups}
             initialCapital={initialCapital}
             onFilterBySetup={handleFilterBySetup}
+            onFilterByMonth={handleFilterByMonth}
             onOpenNewTrade={() => {
               setNewTradeInitialData(undefined);
               setIsNewTradeModalOpen(true);
@@ -679,23 +742,7 @@ export default function App() {
           />
         )}
 
-        {/* Tab Ações: Módulo Completo de Day Trade em Ações da B3 */}
-        {activeTab === 'acoes' && (
-          <AcoesDayTradeView
-            trades={trades}
-            setups={setups}
-            onOpenNewTrade={(initialData) => {
-              setNewTradeInitialData(initialData || { asset: 'ACOES', ticker: 'PETR4', quantity: 200 });
-              setIsNewTradeModalOpen(true);
-            }}
-            onEditTrade={(t) => setEditingTrade(t)}
-            onNavigateToHistory={(ticker) => {
-              setInitialHistoryAssetFilter('ACOES');
-              if (ticker) setInitialHistorySearch(ticker);
-              setActiveTab('historico');
-            }}
-          />
-        )}
+
 
         {/* Tab 2: Resumo Mensal Dedicado */}
         {activeTab === 'mensal' && (
@@ -1081,6 +1128,12 @@ export default function App() {
         totalProfit={metrics.totalProfit}
         totalTrades={trades.length}
         trades={trades}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
 
       {/* Footer */}

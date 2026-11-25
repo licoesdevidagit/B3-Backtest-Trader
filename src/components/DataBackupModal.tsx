@@ -153,62 +153,66 @@ export const DataBackupModal: React.FC<DataBackupModalProps> = ({
             </button>
           </div>
 
-          {/* Reset / Sample data */}
-          <div className="p-3.5 rounded-lg border border-slate-800 bg-slate-950/50 space-y-2">
-            <h3 className="text-xs font-semibold text-white uppercase tracking-wider">
-              Ações de Amostra e Limpeza
+          {/* Iniciar do Zero & Backup Prompt */}
+          <div className="p-3.5 rounded-lg border border-rose-500/30 bg-rose-950/20 space-y-2">
+            <h3 className="text-xs font-semibold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-rose-400" />
+              <span>Iniciar do Zero (Zerar Dados)</span>
             </h3>
-            <div className="flex flex-col gap-2 pt-1">
+            <p className="text-[11px] text-slate-400">
+              Apaga todas as informações e trades cadastrados. Recomendamos fazer um backup antes de prosseguir.
+            </p>
+            {showClearConfirm ? (
+              <div className="p-3 rounded-lg border border-rose-500/40 bg-rose-500/10 space-y-2.5">
+                <p className="text-xs font-bold text-rose-200">
+                  Deseja fazer um backup antes de apagar tudo e iniciar do zero?
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleExportJSON();
+                      onClearAllTrades();
+                      setShowClearConfirm(false);
+                      onClose();
+                    }}
+                    className="flex-1 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    <span>Fazer Backup & Iniciar do Zero</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClearAllTrades();
+                      setShowClearConfirm(false);
+                      onClose();
+                    }}
+                    className="py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition-colors cursor-pointer"
+                  >
+                    Apagar sem Backup
+                  </button>
+                </div>
+                <div className="text-right">
+                  <button
+                    type="button"
+                    onClick={() => setShowClearConfirm(false)}
+                    className="text-[11px] text-slate-400 hover:text-white underline cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={() => {
-                  onResetSampleData();
-                  onClose();
-                }}
-                className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-slate-800 bg-slate-900 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+                onClick={() => setShowClearConfirm(true)}
+                className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-rose-500/40 bg-rose-500/20 text-xs font-bold text-rose-200 hover:bg-rose-500 hover:text-slate-950 transition-all cursor-pointer shadow-sm"
               >
-                <RotateCcw className="h-3.5 w-3.5" />
-                <span>Restaurar Operações de Exemplo (WIN e WDO)</span>
+                <Trash2 className="h-4 w-4" />
+                <span>Iniciar do Zero (Zerar Tudo com Backup Prévio)</span>
               </button>
-
-              {showClearConfirm ? (
-                <div className="p-2.5 rounded-lg border border-rose-500/30 bg-rose-500/10 flex items-center justify-between">
-                  <span className="text-xs text-rose-300 flex items-center gap-1">
-                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                    Apagar todos os trades?
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClearAllTrades();
-                        setShowClearConfirm(false);
-                        onClose();
-                      }}
-                      className="px-2.5 py-1 text-xs font-bold rounded bg-rose-500 text-white hover:bg-rose-600"
-                    >
-                      Confirmar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowClearConfirm(false)}
-                      className="px-2 py-1 text-xs text-slate-300 hover:text-white"
-                    >
-                      Não
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowClearConfirm(true)}
-                  className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-slate-800 bg-slate-900 text-xs font-medium text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30 transition-colors"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Limpar Todos os Trades (Iniciar Backtest do Zero)</span>
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
 

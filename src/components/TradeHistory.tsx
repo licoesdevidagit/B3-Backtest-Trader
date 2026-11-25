@@ -247,10 +247,8 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
   const assetMetrics = useMemo(() => {
     let winCount = 0;
     let wdoCount = 0;
-    let acoesCount = 0;
     let winProfit = 0;
     let wdoProfit = 0;
-    let acoesProfit = 0;
 
     trades.forEach((t) => {
       if (t.asset === 'WIN') {
@@ -259,9 +257,6 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
       } else if (t.asset === 'WDO') {
         wdoCount++;
         wdoProfit += t.financialValue;
-      } else if (t.asset === 'ACOES') {
-        acoesCount++;
-        acoesProfit += t.financialValue;
       }
     });
 
@@ -269,10 +264,8 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
       all: trades.length,
       winCount,
       wdoCount,
-      acoesCount,
       winProfit,
       wdoProfit,
-      acoesProfit,
     };
   }, [trades]);
 
@@ -388,8 +381,8 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
           )}
         </div>
 
-        {/* 4 Botões Principais de Seleção de Ativo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+        {/* 3 Botões Principais de Seleção de Ativo */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {/* Opção 1: Todos os Ativos */}
           <button
             type="button"
@@ -404,7 +397,7 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-white">Todos os Mercados</span>
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                  WIN + WDO + Ações
+                  WIN + WDO
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
@@ -475,37 +468,6 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
               </span>
               <span className={`text-[10px] font-bold ${assetMetrics.wdoProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {formatBRL(assetMetrics.wdoProfit)}
-              </span>
-            </div>
-          </button>
-
-          {/* Opção 4: Ações B3 (ACOES) */}
-          <button
-            type="button"
-            onClick={() => setFilterAsset('ACOES')}
-            className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-3 ${
-              filterAsset === 'ACOES'
-                ? 'bg-purple-950/50 border-purple-500/70 text-white shadow-md ring-1 ring-purple-500/40'
-                : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900/80 hover:border-slate-700'
-            }`}
-          >
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-white">Ações B3</span>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40">
-                  ACOES
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                PETR4, VALE3, ITUB4, BBAS3...
-              </p>
-            </div>
-            <div className="text-right font-mono">
-              <span className={`text-sm font-bold block ${filterAsset === 'ACOES' ? 'text-purple-300' : 'text-slate-200'}`}>
-                {assetMetrics.acoesCount} trades
-              </span>
-              <span className={`text-[10px] font-bold ${assetMetrics.acoesProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {formatBRL(assetMetrics.acoesProfit)}
               </span>
             </div>
           </button>
@@ -1085,7 +1047,7 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
                       </span>
 
                       <span className="text-[11px] font-mono text-slate-400">
-                        {t.asset === 'ACOES' ? `${t.quantity || t.contracts} ações` : `${t.contracts} ${t.contracts === 1 ? 'ct' : 'cts'}`}
+                        {t.contracts} {t.contracts === 1 ? 'ct' : 'cts'}
                       </span>
 
                       {/* Psychology & Discipline badge on mobile */}
@@ -1354,7 +1316,7 @@ export const TradeHistory: React.FC<TradeHistoryProps> = ({
 
                       {/* Contracts / Shares */}
                       <td className="py-2.5 px-2 text-center text-slate-200">
-                        {t.asset === 'ACOES' ? `${t.quantity || t.contracts} ações` : `${t.contracts} ${t.contracts === 1 ? 'ct' : 'cts'}`}
+                        {t.contracts} {t.contracts === 1 ? 'ct' : 'cts'}
                       </td>
 
                       {/* Result */}

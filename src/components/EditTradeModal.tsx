@@ -112,14 +112,10 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
     onUpdateTrade({
       ...trade,
       asset,
-      ticker: asset === 'ACOES' ? (ticker.trim().toUpperCase() || 'PETR4') : undefined,
-      quantity: asset === 'ACOES' ? Math.max(1, quantity) : undefined,
-      entryPrice: asset === 'ACOES' && parseFloat(entryPrice) > 0 ? parseFloat(entryPrice) : undefined,
-      exitPrice: asset === 'ACOES' && parseFloat(exitPrice) > 0 ? parseFloat(exitPrice) : undefined,
       setupId,
       setupName: selectedSetup?.name || trade.setupName || 'Setup',
       direction,
-      contracts: asset === 'ACOES' ? Math.max(1, quantity) : Math.max(1, contracts),
+      contracts: Math.max(1, contracts),
       result,
       points: signedPoints,
       financialValue: parseFloat(financialInput) || 0,
@@ -198,72 +194,6 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
             </div>
           </div>
 
-          {/* If Ações, show Ticker and Stock Quantity */}
-          {asset === 'ACOES' && (
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg border border-purple-500/30 bg-purple-950/20">
-              <div>
-                <label className="block text-xs font-medium text-purple-300 mb-1">
-                  Ticker da Ação (B3)
-                </label>
-                <input
-                  type="text"
-                  value={ticker}
-                  onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                  placeholder="PETR4, VALE3..."
-                  className="w-full rounded-lg border border-purple-500/40 bg-slate-900 px-3 py-1.5 text-xs font-mono font-bold text-white focus:outline-none uppercase"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-purple-300 mb-1">
-                  Quantidade de Ações
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={quantity}
-                  onChange={(e) => {
-                    const q = Math.max(1, parseInt(e.target.value) || 100);
-                    setQuantity(q);
-                    setContracts(q);
-                  }}
-                  className="w-full rounded-lg border border-purple-500/40 bg-slate-900 px-3 py-1.5 text-xs font-mono text-white focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                  Preço Entrada (R$)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={entryPrice}
-                  onChange={(e) => setEntryPrice(e.target.value)}
-                  placeholder="Ex: 38.50"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-mono text-white focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                  Preço Saída (R$)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={exitPrice}
-                  onChange={(e) => setExitPrice(e.target.value)}
-                  placeholder="Ex: 39.10"
-                  className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-mono text-white focus:outline-none"
-                />
-              </div>
-            </div>
-          )}
-
           {/* Setup & Contracts */}
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -283,30 +213,19 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
               </select>
             </div>
 
-            {asset !== 'ACOES' ? (
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Quantidade de Contratos
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={contracts}
-                  onChange={(e) => handleContractsChange(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-mono text-white focus:outline-none"
-                  required
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Lote Total de Ações
-                </label>
-                <div className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-mono text-purple-300 font-bold">
-                  {quantity} ações ({Math.floor(quantity / 100)} {Math.floor(quantity / 100) === 1 ? 'lote' : 'lotes'})
-                </div>
-              </div>
-            )}
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Quantidade de Contratos
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={contracts}
+                onChange={(e) => handleContractsChange(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-mono text-white focus:outline-none"
+                required
+              />
+            </div>
           </div>
 
           {/* Result */}

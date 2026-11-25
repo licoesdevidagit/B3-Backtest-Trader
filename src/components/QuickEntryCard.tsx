@@ -222,24 +222,21 @@ export const QuickEntryCard: React.FC<QuickEntryCardProps> = ({
 
   const handleQuickLog = (result: TradeResult) => {
     const pts = result === 'GAIN' 
-      ? (currentSetup?.defaultGainPts || (asset === 'WIN' ? 150 : asset === 'WDO' ? 8.0 : 0.60)) 
+      ? (currentSetup?.defaultGainPts || (asset === 'WIN' ? 150 : 8.0)) 
       : result === 'LOSS'
-      ? -(currentSetup?.defaultLossPts || (asset === 'WIN' ? 120 : asset === 'WDO' ? 5.0 : 0.40))
+      ? -(currentSetup?.defaultLossPts || (asset === 'WIN' ? 120 : 5.0))
       : 0;
 
-    const actualQty = asset === 'ACOES' ? contracts * 100 : contracts;
-    const fin = calculateTradeFinancial(asset, pts, actualQty);
+    const fin = calculateTradeFinancial(asset, pts, contracts);
 
     onSaveTrade({
       date,
       time,
       asset,
-      ticker: asset === 'ACOES' ? 'PETR4' : undefined,
-      quantity: asset === 'ACOES' ? actualQty : undefined,
       setupId: currentSetup?.id || 'setup-default',
       setupName: currentSetup?.name || 'Setup',
       direction,
-      contracts: actualQty,
+      contracts: Math.max(1, contracts),
       result,
       points: pts,
       financialValue: fin,
@@ -960,7 +957,7 @@ export const QuickEntryCard: React.FC<QuickEntryCardProps> = ({
             <label className="block text-[11px] font-medium text-slate-400 mb-1">
               Ativo / Mercado
             </label>
-            <div className="grid grid-cols-3 gap-1 p-0.5 rounded-lg bg-slate-950 border border-slate-800">
+            <div className="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-slate-950 border border-slate-800">
               <button
                 type="button"
                 onClick={() => handleAssetSelect('WIN')}
@@ -982,17 +979,6 @@ export const QuickEntryCard: React.FC<QuickEntryCardProps> = ({
                 }`}
               >
                 WDO
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAssetSelect('ACOES')}
-                className={`py-1 text-[11px] font-mono font-bold rounded ${
-                  asset === 'ACOES'
-                    ? 'bg-purple-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                AÇÕES
               </button>
             </div>
           </div>

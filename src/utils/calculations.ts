@@ -4,67 +4,20 @@ import { SETUP_CHART_PRESETS } from './setupChartPresets';
 // B3 Point Values in R$ per contract/unit
 export const POINT_VALUE_WIN = 0.20; // R$ 0,20 por ponto no Mini Índice
 export const POINT_VALUE_WDO = 10.00; // R$ 10,00 por ponto no Mini Dólar
-export const POINT_VALUE_ACOES = 1.00; // R$ 1,00 por Real de oscilação por ação
-
-export interface B3StockInfo {
-  ticker: string;
-  name: string;
-  sector: string;
-  standardLot: number;
-  typicalDailyRangePts: number; // Oscilação típica diária em R$ (ex: 0.85)
-}
-
-export const B3_POPULAR_STOCKS: B3StockInfo[] = [
-  { ticker: 'PETR4', name: 'Petrobras PN', sector: 'Petróleo & Gás', standardLot: 100, typicalDailyRangePts: 0.90 },
-  { ticker: 'VALE3', name: 'Vale ON', sector: 'Mineração', standardLot: 100, typicalDailyRangePts: 1.20 },
-  { ticker: 'ITUB4', name: 'Itaú Unibanco PN', sector: 'Financeiro', standardLot: 100, typicalDailyRangePts: 0.65 },
-  { ticker: 'BBDC4', name: 'Bradesco PN', sector: 'Financeiro', standardLot: 100, typicalDailyRangePts: 0.35 },
-  { ticker: 'BBAS3', name: 'Banco do Brasil ON', sector: 'Financeiro', standardLot: 100, typicalDailyRangePts: 0.70 },
-  { ticker: 'PRIO3', name: 'PetroRio ON', sector: 'Petróleo & Gás', standardLot: 100, typicalDailyRangePts: 1.10 },
-  { ticker: 'MGLU3', name: 'Magazine Luiza ON', sector: 'Varejo', standardLot: 100, typicalDailyRangePts: 0.40 },
-  { ticker: 'WEGE3', name: 'WEG ON', sector: 'Bens de Capital', standardLot: 100, typicalDailyRangePts: 0.80 },
-  { ticker: 'RENT3', name: 'Localiza ON', sector: 'Locação & Transporte', standardLot: 100, typicalDailyRangePts: 0.95 },
-  { ticker: 'BOVA11', name: 'iShares Ibovespa ETF', sector: 'Índice B3', standardLot: 10, typicalDailyRangePts: 1.80 },
-  { ticker: 'B3SA3', name: 'B3 S.A. ON', sector: 'Serviços Financeiros', standardLot: 100, typicalDailyRangePts: 0.30 },
-  { ticker: 'SUZB3', name: 'Suzano ON', sector: 'Papel & Celulose', standardLot: 100, typicalDailyRangePts: 1.05 },
-  { ticker: 'GGBR4', name: 'Gerdau PN', sector: 'Siderurgia', standardLot: 100, typicalDailyRangePts: 0.45 },
-  { ticker: 'ABEV3', name: 'Ambev ON', sector: 'Bebidas', standardLot: 100, typicalDailyRangePts: 0.25 },
-  { ticker: 'CSNA3', name: 'Siderúrgica Nacional ON', sector: 'Siderurgia', standardLot: 100, typicalDailyRangePts: 0.40 },
-  { ticker: 'HAPV3', name: 'Hapvida ON', sector: 'Saúde', standardLot: 100, typicalDailyRangePts: 0.18 },
-];
 
 export function calculateTradeFinancial(
   asset: AssetType,
   signedPoints: number,
-  contracts: number
+  contracts: number,
+  quantity?: number
 ): number {
-  const pointValue = asset === 'WIN' ? POINT_VALUE_WIN : asset === 'WDO' ? POINT_VALUE_WDO : POINT_VALUE_ACOES;
+  if (asset === 'ACOES') {
+    // Para Ações, o resultado financeiro líquido direto ou calculado por quantidade * variação em R$
+    const qty = quantity || contracts || 1;
+    return Number((signedPoints * qty).toFixed(2));
+  }
+  const pointValue = asset === 'WIN' ? POINT_VALUE_WIN : POINT_VALUE_WDO;
   return Number((signedPoints * contracts * pointValue).toFixed(2));
-}
-
-export function calculateAcoesTradeDetails(
-  direction: 'COMPRA' | 'VENDA',
-  quantity: number,
-  entryPrice: number,
-  exitPrice: number,
-  feeRateB3: number = 0.00025 // Emolumentos + Liquidação B3 para Day Trade (~0,025% do volume financeiro total)
-) {
-  const qty = Math.max(1, quantity);
-  const priceDiff = direction === 'COMPRA' ? (exitPrice - entryPrice) : (entryPrice - exitPrice);
-  const priceChangePercent = entryPrice > 0 ? (priceDiff / entryPrice) * 100 : 0;
-  const grossFinancial = Number((priceDiff * qty).toFixed(2));
-  const financialVolume = Number(((entryPrice * qty) + (exitPrice * qty)).toFixed(2));
-  const estimatedB3Fees = Number((financialVolume * feeRateB3).toFixed(2));
-  const netFinancial = Number((grossFinancial - estimatedB3Fees).toFixed(2));
-
-  return {
-    priceDiff: Number(priceDiff.toFixed(2)),
-    priceChangePercent: Number(priceChangePercent.toFixed(2)),
-    grossFinancial,
-    financialVolume,
-    estimatedB3Fees,
-    netFinancial,
-  };
 }
 
 export function formatBRL(value: number): string {
@@ -83,10 +36,7 @@ export function formatPoints(points: number, asset: AssetType): string {
   if (asset === 'WIN') {
     return `${sign}${points.toLocaleString('pt-BR')} pts`;
   }
-  if (asset === 'WDO') {
-    return `${sign}${points.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} pts`;
-  }
-  return `${sign}R$ ${Math.abs(points).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/ação`;
+  return `${sign}${points.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} pts`;
 }
 
 export function formatDateBR(dateStr?: string): string {
@@ -158,21 +108,21 @@ export const INITIAL_SETUPS: Setup[] = [
   {
     id: 'setup-acoes-vwap',
     name: 'Rompimento de VWAP em Ações',
-    description: 'Rompimento do preço médio ponderado por volume (VWAP) com volume acima da média nas ações do Ibov.',
-    preferredAsset: 'ACOES',
-    defaultGainPts: 0.65,
-    defaultLossPts: 0.35,
+    description: 'Rompimento do preço médio ponderado por volume (VWAP) com volume acima da média.',
+    preferredAsset: 'WIN',
+    defaultGainPts: 150,
+    defaultLossPts: 100,
     color: '#06b6d4',
     imageUrl: SETUP_CHART_PRESETS[0]?.svgDataUrl,
     createdAt: '2026-01-01',
   },
   {
     id: 'setup-acoes-gap',
-    name: 'Gap & Go na Abertura de Ações',
-    description: 'Continuação imediata de gap de alta ou baixa após leilão das 10h com confirmação nos primeiros 5 minutos.',
-    preferredAsset: 'ACOES',
-    defaultGainPts: 0.80,
-    defaultLossPts: 0.40,
+    name: 'Gap & Go na Abertura',
+    description: 'Continuação imediata de gap de alta ou baixa com confirmação nos primeiros 5 minutos.',
+    preferredAsset: 'WIN',
+    defaultGainPts: 200,
+    defaultLossPts: 120,
     color: '#a855f7',
     imageUrl: SETUP_CHART_PRESETS[1]?.svgDataUrl,
     createdAt: '2026-01-01',

@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "Trade": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "date": { "type": "string", "maxLength": 20 },
+        "time": { "type": "string", "maxLength": 10 },
+        "asset": { "type": "string", "maxLength": 20 },
+        "ticker": { "type": "string", "maxLength": 20 },
+        "quantity": { "type": "number" },
+        "entryPrice": { "type": "number" },
+        "exitPrice": { "type": "number" },
+        "stopLoss": { "type": "number" },
+        "takeProfit": { "type": "number" },
+        "priceChange": { "type": "number" },
+        "priceChangePercent": { "type": "number" },
+        "financialVolume": { "type": "number" },
+        "b3Fees": { "type": "number" },
+        "netFinancialValue": { "type": "number" },
+        "setupId": { "type": "string", "maxLength": 100 },
+        "setupName": { "type": "string", "maxLength": 100 },
+        "direction": { "type": "string", "maxLength": 20 },
+        "contracts": { "type": "number" },
+        "result": { "type": "string", "maxLength": 20 },
+        "points": { "type": "number" },
+        "financialValue": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "maxLength": 30 }
+      },
+      "required": ["id", "date", "asset", "setupId", "direction", "contracts", "result", "points", "financialValue", "createdAt"]
+    },
+    "Setup": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "preferredAsset": { "type": "string", "maxLength": 20 },
+        "defaultGainPts": { "type": "number" },
+        "defaultLossPts": { "type": "number" },
+        "color": { "type": "string", "maxLength": 50 },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "maxLength": 30 }
+      },
+      "required": ["id", "name", "preferredAsset", "createdAt"]
+    }
+  },
+  "firestore": {
+    "paths": {
+      "users/{userId}/trades/{tradeId}": {
+        "schema": "Trade",
+        "read": "request.auth != null && request.auth.uid == userId",
+        "write": "request.auth != null && request.auth.uid == userId"
+      },
+      "users/{userId}/setups/{setupId}": {
+        "schema": "Setup",
+        "read": "request.auth != null && request.auth.uid == userId",
+        "write": "request.auth != null && request.auth.uid == userId"
+      }
+    }
+  }
+}
