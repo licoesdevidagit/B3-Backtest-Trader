@@ -1,7 +1,7 @@
 import React from 'react';
-import { PlusCircle, Sliders, Database, TrendingUp, BarChart3, ListFilter, CalendarDays, PieChart, Palette, Receipt, Trophy, Award, Wallet, Brain, LogIn, LogOut } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { PlusCircle, Sliders, Database, TrendingUp, BarChart3, ListFilter, CalendarDays, PieChart, Palette, Receipt, Trophy, Award, Wallet, Brain } from 'lucide-react';
 import { formatBRL } from '../utils/calculations';
+import { STORAGE_KEY_CERT_TRADER_NAME } from '../utils/milestones';
 
 interface HeaderProps {
   activeTab: 'dashboard' | 'graficos' | 'mensal' | 'historico' | 'setups' | 'relatorios' | 'darf' | 'psicologia';
@@ -30,7 +30,14 @@ export const Header: React.FC<HeaderProps> = ({
   achievedGoalsCount,
   totalTrades,
 }) => {
-  const { user, setIsAuthModalOpen, logOut } = useAuth();
+  const traderName = (() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_CERT_TRADER_NAME) || 'José Ricardo Martins de Carvalho';
+    } catch (e) {
+      return 'José Ricardo Martins de Carvalho';
+    }
+  })();
+
   return (
     <header className="sticky top-0 z-30 border-b border-slate-800 bg-slate-950/95 backdrop-blur-md w-full">
       <div className="mx-auto max-w-7xl px-2.5 sm:px-4 lg:px-6 py-2 space-y-2">
@@ -134,29 +141,11 @@ export const Header: React.FC<HeaderProps> = ({
               <Database className="h-3.5 w-3.5 text-slate-300" />
             </button>
 
-            {/* Login / Logout */}
-            {user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-slate-400 font-medium hidden sm:inline">{user.email || user.displayName}</span>
-                <button
-                  type="button"
-                  onClick={logOut}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span>Sair</span>
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsAuthModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors shadow-sm cursor-pointer whitespace-nowrap"
-              >
-                <LogIn className="h-3.5 w-3.5" />
-                <span>Entrar / Conta</span>
-              </button>
-            )}
+            {/* Trader Name Badge */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-200">
+              <span className="text-slate-400">Trader:</span>
+              <span className="font-mono text-emerald-400">{traderName}</span>
+            </div>
 
             {/* Novo Trade */}
             <button
